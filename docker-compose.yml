@@ -1,0 +1,22 @@
+version: '3'
+services:
+  mockserver:
+    build: .
+    environment:
+      ADDR: "0.0.0.0:8080"
+    networks:
+      - mock
+
+  curl:
+    image: curlimages/curl
+    networks:
+      - mock
+    command:
+      - curl
+      - '-sD'
+      - '-'
+      - http://mockserver:8080/healthcheck
+    depends_on:
+      - mockserver
+networks:
+  mock:
