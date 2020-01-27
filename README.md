@@ -36,3 +36,23 @@ $> make test
 The mockserver service can be configured via the following environment variables:
 
 - ADDR: `string` The server address mockserver binds to.
+
+### Drivers
+#### Simple
+```yaml
+---
+- path: "/test/weighted/errors"
+  method: GET
+  handlers:
+  - weight: 2
+    response_headers:
+      content-type: application/json
+    static_response: '{"resp": "Ok"}'
+    response_status: 200
+  - weight: 1
+    response_headers:
+      content-type: text/plain
+    static_response: ''
+    response_status: 500
+
+```
