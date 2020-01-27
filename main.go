@@ -17,7 +17,7 @@ func main() {
 	mux.HandleFunc(`/healthcheck`, healthHandler).Methods("GET")
 
 	log.Printf("Starting server on %s\n", addr)
-	if err := http.ListenAndServe("addr", mux); err != nil {
+	if err := http.ListenAndServe(addr, mux); err != nil {
 		log.Fatalf("Error in ListenAndServe: %s", err)
 	}
 }
