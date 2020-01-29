@@ -38,8 +38,8 @@ func handlerTest(method, path string, reqBody io.Reader, respCode int, respBody 
 	return nil
 }
 
-func TestBuiltInRoutes(t *testing.T) {
-	t.Run("Health handler returns the correct response", func(t *testing.T) {
+func TestRouterShould(t *testing.T) {
+	t.Run("correctly hand off routing to mux", func(t *testing.T) {
 		err := handlerTest("GET", "/test", nil, http.StatusOK, `Ok`, func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprint(w, `Ok`)
 		})
