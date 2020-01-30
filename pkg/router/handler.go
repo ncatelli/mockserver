@@ -1,8 +1,10 @@
 package router
 
+// Handler includes all the metadata to decide on and serve a response.
 type Handler struct {
-	Weight          int
-	ResponseHeaders map[string]string
-	StaticResponse  string
-	ResponseStatus  int
+	Weight          int               `yaml:"weight"`
+	ResponseHeaders map[string]string `yaml:"response_headers"`
+	StaticResponse  string            `yaml:"static_response"`
+	ResponseStatus  int               `yaml:"response_status"`
+	ResponsePath    string            `yaml:"response_path"`
 }
