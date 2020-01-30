@@ -7,10 +7,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const (
-	errFmt string = "want %v, got %v"
-)
-
 func TestRouteUnmarshaling(t *testing.T) {
 	t.Run("should unmarshal to the correct keys", func(t *testing.T) {
 		expectedRoute := Route{
