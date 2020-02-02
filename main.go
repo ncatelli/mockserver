@@ -12,10 +12,10 @@ import (
 func main() {
 	c, e := config.New()
 	if e != nil {
-		log.Fatal("Unable to parse config file.")
+		log.Fatal("unable to parse config params")
 	}
 
-	router := router.New()
+	router := router.New([]router.Route{}) // FIXME
 	router.Mux.HandleFunc(`/healthcheck`, healthHandler).Methods("GET")
 
 	log.Printf("Starting server on %s\n", c.Addr)

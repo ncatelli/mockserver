@@ -13,7 +13,7 @@ type Router struct {
 }
 
 // New initializes and returns an instance of Router.
-func New() *Router {
+func New(routes []Route) *Router {
 	return &Router{
 		Mux: mux.NewRouter(),
 	}
