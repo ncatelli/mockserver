@@ -1,22 +1,25 @@
-package router
+package simple
 
 import (
 	"log"
 	"path/filepath"
 	"reflect"
 	"testing"
+
+	"github.com/ncatelli/mockserver/pkg/router"
 )
 
 const (
 	goodConfigPath string = "test_fixtures/good.yaml"
+	errFmt         string = "want %v, got %v"
 )
 
-var expectedRoutes = []*Route{
-	&Route{
+var expectedRoutes = []*router.Route{
+	&router.Route{
 		Path:   "/test/weighted/errors",
 		Method: "GET",
-		Handlers: []Handler{
-			Handler{
+		Handlers: []router.Handler{
+			router.Handler{
 				Weight: 2,
 				ResponseHeaders: map[string]string{
 					"content-type": "application/json",
@@ -24,7 +27,7 @@ var expectedRoutes = []*Route{
 				StaticResponse: "{\"resp\": \"Ok\"}",
 				ResponseStatus: 200,
 			},
-			Handler{
+			router.Handler{
 				Weight: 1,
 				ResponseHeaders: map[string]string{
 					"content-type": "text/plain",
