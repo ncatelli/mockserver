@@ -11,8 +11,8 @@ const (
 	goodConfigPath string = "test_fixtures/good.yaml"
 )
 
-var expectedRoutes = []Route{
-	Route{
+var expectedRoutes = []*Route{
+	&Route{
 		Path:   "/test/weighted/errors",
 		Method: "GET",
 		Handlers: []Handler{

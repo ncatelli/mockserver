@@ -10,8 +10,8 @@ import (
 // LoadFromFile takes a path an attempts to unmarshal a route slice from a yaml
 // file. On success, a slice of routes and nil is returned, otherwise an error
 // is returned.
-func LoadFromFile(path string) ([]Route, error) {
-	routes := make([]Route, 0)
+func LoadFromFile(path string) ([]*Route, error) {
+	routes := make([]*Route, 0)
 	dat, err := ioutil.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return routes, err
