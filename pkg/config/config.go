@@ -8,7 +8,8 @@ import (
 // global level. This can include listening address, feature flags and other
 // configurations.
 type Config struct {
-	Addr string `env:"ADDR" envDefault:"0.0.0.0:8080"`
+	Addr       string `env:"ADDR" envDefault:"0.0.0.0:8080"`
+	ConfigPath string `env:"CONFIG_PATH"`
 }
 
 // New initializes a Config, attempting to parse parames from Envs.

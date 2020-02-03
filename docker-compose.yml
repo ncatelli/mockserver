@@ -4,18 +4,17 @@ services:
     build: .
     environment:
       ADDR: "0.0.0.0:8080"
+      CONFIG_PATH: /examples/simple_driver.yaml
+    volumes:
+      - ./examples/:/examples/
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8080/healthcheck"]
     networks:
       - mock
-
   curl:
     image: curlimages/curl
     networks:
       - mock
-    command:
-      - curl
-      - '-sD'
-      - '-'
-      - http://mockserver:8080/healthcheck
     depends_on:
       - mockserver
 networks:

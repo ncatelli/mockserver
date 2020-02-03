@@ -5,22 +5,27 @@ import (
 
 	"net/http"
 
-	"github.com/gorilla/mux"
-
 	"github.com/ncatelli/mockserver/pkg/config"
+	"github.com/ncatelli/mockserver/pkg/router"
+	"github.com/ncatelli/mockserver/pkg/router/drivers/simple"
 )
 
 func main() {
 	c, e := config.New()
 	if e != nil {
-		log.Fatal("Unable to parse config file.")
+		log.Fatal("unable to parse config params")
 	}
 
-	mux := mux.NewRouter()
-	mux.HandleFunc(`/healthcheck`, healthHandler).Methods("GET")
+	routes, err := simple.LoadFromFile(c.ConfigPath)
+	if err != nil {
+		panic(err)
+	}
+
+	router := router.New(routes)
+	router.HandleFunc(`/healthcheck`, healthHandler).Methods("GET")
 
 	log.Printf("Starting server on %s\n", c.Addr)
-	if err := http.ListenAndServe(c.Addr, mux); err != nil {
+	if err := http.ListenAndServe(c.Addr, router); err != nil {
 		log.Fatalf("Error in ListenAndServe: %s", err)
 	}
 }

@@ -1,0 +1,21 @@
+- path: "/test/pathvar/{embed}"
+  method: GET
+  handlers:
+  - weight: 1
+    response_headers:
+      content-type: text/plain
+    static_response: '{{ .PathVars.embed }}'
+    response_status: 200
+- path: "/test/weighted"
+  method: GET
+  handlers:
+  - weight: 2
+    response_headers:
+      content-type: application/json
+    static_response: '{"resp": "Ok"}'
+    response_status: 200
+  - weight: 1
+    response_headers:
+      content-type: text/plain
+    static_response: ''
+    response_status: 500

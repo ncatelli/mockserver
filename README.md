@@ -1,4 +1,4 @@
-# mock-server
+# mockserver
 ## General
 This tool provides a simple framework for generating performance test-ready mocks from configuration files.
 
@@ -35,13 +35,22 @@ $> make test
 ### Services
 The mockserver service can be configured via the following environment variables:
 
-- ADDR: `string` The server address mockserver binds to.
+- ADDR:        `string` The server address mockserver binds to.
+- CONFIG_PATH: `string` A filesystem path to the simple driver config file.
 
 ### Drivers
 #### Simple
 ```yaml
 ---
-- path: "/test/weighted/errors"
+- path: "/test/pathvar/{embed}"
+  method: GET
+  handlers:
+  - weight: 1
+    response_headers:
+      content-type: text/plain
+    static_response: '{{ .PathVars.embed }}'
+    response_status: 200
+- path: "/test/weighted"
   method: GET
   handlers:
   - weight: 2
@@ -54,5 +63,4 @@ The mockserver service can be configured via the following environment variables
       content-type: text/plain
     static_response: ''
     response_status: 500
-
 ```
