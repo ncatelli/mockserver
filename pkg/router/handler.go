@@ -4,7 +4,14 @@ import (
 	"html/template"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
+
+type templateVariables struct {
+	Request  *http.Request
+	PathVars map[string]string
+}
 
 // Handler includes all the metadata to decide on and serve a response.
 type Handler struct {
@@ -61,5 +68,8 @@ func (handler *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(handler.ResponseStatus)
-	t.Execute(w, nil)
+	t.Execute(w, &templateVariables{
+		Request:  r,
+		PathVars: mux.Vars(r),
+	})
 }

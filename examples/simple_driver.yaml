@@ -4,7 +4,7 @@
   - weight: 1
     response_headers:
       content-type: text/plain
-    static_response: "{{ .PathVars.embed }}"
+    static_response: '{{ .PathVars.embed }}'
     response_status: 200
 - path: "/test/weighted"
   method: GET
