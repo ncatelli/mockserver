@@ -61,6 +61,68 @@ func TestHandlerServeHTTPMethodShould(t *testing.T) {
 		}
 	})
 
+	t.Run("render a valid path var into the response template", func(t *testing.T) {
+		h := &Handler{
+			StaticResponse: `{{ .PathVars.pathvar }}`,
+			ResponseStatus: 200,
+		}
+
+		req, err := http.NewRequest("GET", "/test/1", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := mux.NewRouter()
+		router.Handle("/test/{pathvar}", h).Methods("GET")
+
+		rr := httptest.NewRecorder()
+		router.ServeHTTP(rr, req)
+
+		// Check the status code is what we expect.
+		if status := rr.Code; status != http.StatusOK {
+			t.Errorf("handler returned wrong status code: got %v want %v",
+				status, http.StatusOK)
+		}
+
+		// Check the response body is what we expect.
+		expected := `1`
+		if rr.Body.String() != expected {
+			t.Errorf(errFmt,
+				expected, rr.Body.String())
+		}
+	})
+
+	t.Run("allow calls to GTF functions in response template", func(t *testing.T) {
+		h := &Handler{
+			StaticResponse: `{{ "Ok" | length }}`,
+			ResponseStatus: 200,
+		}
+
+		req, err := http.NewRequest("GET", "/", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := mux.NewRouter()
+		router.Handle("/", h).Methods("GET")
+
+		rr := httptest.NewRecorder()
+		router.ServeHTTP(rr, req)
+
+		// Check the status code is what we expect.
+		if status := rr.Code; status != http.StatusOK {
+			t.Errorf("handler returned wrong status code: got %v want %v",
+				status, http.StatusOK)
+		}
+
+		// Check the response body is what we expect.
+		expected := `2`
+		if rr.Body.String() != expected {
+			t.Errorf(errFmt,
+				expected, rr.Body.String())
+		}
+	})
+
 	t.Run("set response headers when specified on the handler", func(t *testing.T) {
 		er := `"Ok"`
 		h := &Handler{
