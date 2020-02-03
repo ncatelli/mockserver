@@ -1,4 +1,4 @@
-# mock-server
+# mockserver
 ## General
 This tool provides a simple framework for generating performance test-ready mocks from configuration files.
 
@@ -35,7 +35,8 @@ $> make test
 ### Services
 The mockserver service can be configured via the following environment variables:
 
-- ADDR: `string` The server address mockserver binds to.
+- ADDR:        `string` The server address mockserver binds to.
+- CONFIG_PATH: `string` A filesystem path to the simple driver config file.
 
 ### Drivers
 #### Simple
@@ -54,5 +55,4 @@ The mockserver service can be configured via the following environment variables
       content-type: text/plain
     static_response: ''
     response_status: 500
-
 ```
