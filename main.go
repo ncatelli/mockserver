@@ -7,6 +7,7 @@ import (
 
 	"github.com/ncatelli/mockserver/pkg/config"
 	"github.com/ncatelli/mockserver/pkg/router"
+	"github.com/ncatelli/mockserver/pkg/router/drivers/simple"
 )
 
 func main() {
@@ -15,7 +16,12 @@ func main() {
 		log.Fatal("unable to parse config params")
 	}
 
-	router := router.New([]*router.Route{}) // FIXME
+	routes, err := simple.LoadFromFile(c.ConfigPath)
+	if err != nil {
+		panic(err)
+	}
+
+	router := router.New(routes)
 	router.HandleFunc(`/healthcheck`, healthHandler).Methods("GET")
 
 	log.Printf("Starting server on %s\n", c.Addr)
