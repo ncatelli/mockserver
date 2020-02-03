@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/leekchan/gtf"
 )
 
 type templateVariables struct {
@@ -46,7 +47,7 @@ func (handler *Handler) getBodyTemplate() (*template.Template, error) {
 		body = string(bb)
 	}
 
-	t, err := template.New("").Parse(body)
+	t, err := template.New("").Funcs(gtf.GtfFuncMap).Parse(body)
 	if err != nil {
 		return nil, err
 	}
