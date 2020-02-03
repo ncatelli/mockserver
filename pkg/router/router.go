@@ -1,25 +1,25 @@
 package router
 
 import (
-	"net/http"
-
 	"github.com/gorilla/mux"
 )
 
-// Router provides a wrapper for gorilla mux to fascilitate registering, and
-// routing to mock methods.
-type Router struct {
-	Mux *mux.Router
-}
+// New takes a list of routes and attempts to return a router with all of these
+// routes registered to it.
+func New(routes []*Route) *mux.Router {
+	m := mux.NewRouter()
 
-// New initializes and returns an instance of Router.
-func New(routes []Route) *Router {
-	return &Router{
-		Mux: mux.NewRouter(),
+	for _, r := range routes {
+		route := m.Handle(r.Path, r).Methods(r.Method)
+
+		for k, v := range r.RequestHeaders {
+			route.Headers(k, v)
+		}
+
+		for k, v := range r.QueryParams {
+			route.Queries(k, v)
+		}
 	}
-}
 
-// ServeHTTP handles wrapping the mux ServeHTTP method.
-func (router *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	router.Mux.ServeHTTP(w, r)
+	return m
 }

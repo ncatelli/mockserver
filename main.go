@@ -15,8 +15,8 @@ func main() {
 		log.Fatal("unable to parse config params")
 	}
 
-	router := router.New([]router.Route{}) // FIXME
-	router.Mux.HandleFunc(`/healthcheck`, healthHandler).Methods("GET")
+	router := router.New([]*router.Route{}) // FIXME
+	router.HandleFunc(`/healthcheck`, healthHandler).Methods("GET")
 
 	log.Printf("Starting server on %s\n", c.Addr)
 	if err := http.ListenAndServe(c.Addr, router); err != nil {
