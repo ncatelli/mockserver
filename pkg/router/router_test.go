@@ -114,4 +114,43 @@ func TestRouterShouldNotMatch(t *testing.T) {
 			t.Errorf(errFmt, true, false)
 		}
 	})
+
+	t.Run("not match when a route has a header requirement and the header isn't set", func(t *testing.T) {
+		req, err := http.NewRequest("GET", "/test", nil)
+		if err != nil {
+			t.Error(err)
+		}
+
+		route := &Route{
+			Path:   "/test",
+			Method: "GET",
+			RequestHeaders: map[string]string{
+				"TestHeader": "present",
+			},
+		}
+
+		if routerHelper(req, route) {
+			t.Errorf(errFmt, true, false)
+		}
+	})
+
+	t.Run("not match when a route has a query parameter requirement and the header isn't set", func(t *testing.T) {
+		req, err := http.NewRequest("GET", "/test", nil)
+		if err != nil {
+			t.Error(err)
+		}
+
+		route := &Route{
+			Path:   "/test",
+			Method: "GET",
+			QueryParams: map[string]string{
+				"testparam": "present",
+			},
+		}
+
+		if routerHelper(req, route) {
+			t.Errorf(errFmt, true, false)
+		}
+	})
+
 }
