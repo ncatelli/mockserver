@@ -56,8 +56,45 @@ func TestHandlerServeHTTPMethodShould(t *testing.T) {
 		// Check the response body is what we expect.
 		expected := `Ok`
 		if rr.Body.String() != expected {
-			t.Errorf("handler returned unexpected body: got %v want %v",
-				rr.Body.String(), expected)
+			t.Errorf(errFmt,
+				expected, rr.Body.String())
+		}
+	})
+
+	t.Run("set response headers when specified on the handler", func(t *testing.T) {
+		er := `"Ok"`
+		h := &Handler{
+			StaticResponse: er,
+			ResponseHeaders: map[string]string{
+				"content-type": "application/json",
+			},
+			ResponseStatus: 200,
+		}
+
+		req, err := http.NewRequest("GET", "/", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := mux.NewRouter()
+		router.Handle("/", h).Methods("GET")
+
+		rr := httptest.NewRecorder()
+		router.ServeHTTP(rr, req)
+
+		// Check the status code is what we expect.
+		if status := rr.Code; status != http.StatusOK {
+			t.Errorf(errFmt, http.StatusOK, status)
+		}
+
+		// Check the response body is what we expect.
+		if rr.Body.String() != er {
+			t.Errorf(errFmt, er, rr.Body.String())
+		}
+
+		ct := rr.Header().Get("content-type")
+		if ct != "application/json" {
+			t.Errorf(errFmt, "application/json", ct)
 		}
 	})
 
@@ -80,15 +117,14 @@ func TestHandlerServeHTTPMethodShould(t *testing.T) {
 
 		// Check the status code is what we expect.
 		if status := rr.Code; status != http.StatusOK {
-			t.Errorf("handler returned wrong status code: got %v want %v",
-				status, http.StatusOK)
+			t.Errorf(errFmt, http.StatusOK, status)
 		}
 
 		// Check the response body is what we expect.
 		expected := `Ok`
 		if rr.Body.String() != expected {
-			t.Errorf("handler returned unexpected body: got %v want %v",
-				rr.Body.String(), expected)
+			t.Errorf(errFmt,
+				expected, rr.Body.String())
 		}
 	})
 }
