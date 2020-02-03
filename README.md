@@ -42,7 +42,15 @@ The mockserver service can be configured via the following environment variables
 #### Simple
 ```yaml
 ---
-- path: "/test/weighted/errors"
+- path: "/test/pathvar/{embed}"
+  method: GET
+  handlers:
+  - weight: 1
+    response_headers:
+      content-type: text/plain
+    static_response: '{{ .PathVars.embed }}'
+    response_status: 200
+- path: "/test/weighted"
   method: GET
   handlers:
   - weight: 2
