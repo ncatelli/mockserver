@@ -24,7 +24,7 @@ func TestLoggingMiddlewareShould(t *testing.T) {
 		router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {}).Methods("GET")
 
 		logBuffer := new(bytes.Buffer)
-		logMiddleWare := &Logger{}
+		logMiddleWare := &Middleware{}
 		logMiddleWare.Init(map[string]interface{}{
 			"target": logBuffer,
 		})

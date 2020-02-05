@@ -19,13 +19,13 @@ func (e ErrUnknownTarget) Error() string {
 	return fmt.Sprintf("target %v doesn't implement io.Writer", e.target)
 }
 
-// Logger is a logging middleware that outputs in NCSA format
-type Logger struct {
+// Middleware is a logging middleware that outputs in NCSA format
+type Middleware struct {
 	target io.Writer
 }
 
 // Init takes 0 parameters thus this will always return nil.
-func (logger *Logger) Init(conf map[string]interface{}) error {
+func (logger *Middleware) Init(conf map[string]interface{}) error {
 	if t, prs := conf["target"]; prs == true {
 		v, ok := t.(io.Writer)
 		if !ok {
@@ -45,6 +45,6 @@ func (logger *Logger) Init(conf map[string]interface{}) error {
 // Middleware iplements the Middleware interface and executes the process of
 // outputing a log before handing off the request to the next handler in the
 // chain.
-func (logger *Logger) Middleware(next http.Handler) http.Handler {
+func (logger *Middleware) Middleware(next http.Handler) http.Handler {
 	return handlers.LoggingHandler(logger.target, next)
 }
