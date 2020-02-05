@@ -16,7 +16,7 @@ type Middleware interface {
 // Lookup takes an id and attempts to return the corresponding middleware if
 // the middleware is undefined nil is returned.
 func Lookup(id string) Middleware {
-	if m, prs := middlewares["id"]; prs == true {
+	if m, prs := middlewares[id]; prs == true {
 		return m
 	}
 
