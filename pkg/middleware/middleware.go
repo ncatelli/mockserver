@@ -1,10 +1,18 @@
 package middleware
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/ncatelli/mockserver/pkg/middleware/drivers/logging"
+)
 
 var (
 	middlewares = make(map[string]Middleware)
 )
+
+func init() {
+	middlewares["logging"] = &logging.Middleware{}
+}
 
 // Middleware defines the necessary functions to configure and implement a
 // middleware for use on a route.
