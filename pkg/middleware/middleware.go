@@ -17,7 +17,7 @@ func init() {
 // Middleware defines the necessary functions to configure and implement a
 // middleware for use on a route.
 type Middleware interface {
-	Init(map[string]interface{}) error
+	Init(map[string]string) error
 	Middleware(http.Handler) http.Handler
 }
 

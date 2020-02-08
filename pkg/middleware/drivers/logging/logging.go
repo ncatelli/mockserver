@@ -12,11 +12,11 @@ import (
 // ErrUnknownTarget represents an error trigger when a logger target doesn't
 // implement the io.Writer interface.
 type ErrUnknownTarget struct {
-	target interface{}
+	target string
 }
 
 func (e ErrUnknownTarget) Error() string {
-	return fmt.Sprintf("target %v doesn't implement io.Writer", e.target)
+	return fmt.Sprintf("target %s unknown", e.target)
 }
 
 // Middleware is a logging middleware that outputs in NCSA format
@@ -25,17 +25,18 @@ type Middleware struct {
 }
 
 // Init takes 0 parameters thus this will always return nil.
-func (logger *Middleware) Init(conf map[string]interface{}) error {
+func (logger *Middleware) Init(conf map[string]string) error {
 	if t, prs := conf["target"]; prs == true {
-		v, ok := t.(io.Writer)
-		if !ok {
+		switch t {
+		case "stdout":
+			logger.target = os.Stdout
+		default:
 			return ErrUnknownTarget{
 				target: t,
 			}
 		}
-
-		logger.target = v
 	} else {
+		// default to os.Stdout if no target is specified.
 		logger.target = os.Stdout
 	}
 

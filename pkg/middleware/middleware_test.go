@@ -11,7 +11,7 @@ const (
 
 type testMiddleware struct{}
 
-func (tm *testMiddleware) Init(conf map[string]interface{}) error {
+func (tm *testMiddleware) Init(conf map[string]string) error {
 	return nil
 }
 

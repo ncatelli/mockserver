@@ -25,9 +25,8 @@ func TestLoggingMiddlewareShould(t *testing.T) {
 
 		logBuffer := new(bytes.Buffer)
 		logMiddleWare := &Middleware{}
-		logMiddleWare.Init(map[string]interface{}{
-			"target": logBuffer,
-		})
+		logMiddleWare.Init(map[string]string{})
+		logMiddleWare.target = logBuffer
 
 		router.Use(logMiddleWare.Middleware)
 
