@@ -26,7 +26,7 @@ type Route struct {
 // further into a handler.
 func (route *Route) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if route.totalWeight == 0 {
-		route.totalWeight = route.calculateTotalWeightofHandlers()
+		route.totalWeight = calculateTotalWeightofHandlers(route.Handlers)
 	}
 
 	hw := rand.Intn(route.totalWeight + 1)
@@ -45,10 +45,10 @@ func (route *Route) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // calculateTotalWeightofHandlers iterates over all handlers assigned to the
 // route and sums their total weight.
-func (route *Route) calculateTotalWeightofHandlers() int {
+func calculateTotalWeightofHandlers(handlers []Handler) int {
 	var weight int
 
-	for _, h := range route.Handlers {
+	for _, h := range handlers {
 		weight += h.Weight
 	}
 
