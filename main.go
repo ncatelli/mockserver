@@ -21,7 +21,11 @@ func main() {
 		panic(err)
 	}
 
-	router := router.New(routes)
+	router, err := router.New(routes)
+	if err != nil {
+		panic(err)
+	}
+
 	router.HandleFunc(`/healthcheck`, healthHandler).Methods("GET")
 
 	log.Printf("Starting server on %s\n", c.Addr)

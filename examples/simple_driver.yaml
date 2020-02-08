@@ -1,5 +1,7 @@
 - path: "/test/pathvar/{embed}"
   method: GET
+  middleware:
+    logging: {}
   handlers:
   - weight: 1
     response_headers:

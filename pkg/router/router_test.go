@@ -19,7 +19,7 @@ func generateTestHandler() []Handler {
 
 func routerHelper(req *http.Request, route *Route) bool {
 	rm := &mux.RouteMatch{}
-	router := New([]*Route{route})
+	router, _ := New([]*Route{route})
 
 	return router.Match(req, rm)
 }
