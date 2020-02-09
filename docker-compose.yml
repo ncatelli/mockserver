@@ -9,13 +9,9 @@ services:
       - ./examples/:/examples/
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:8080/healthcheck"]
+    ports:
+      - 8080:8080
     networks:
       - mock
-  curl:
-    image: curlimages/curl
-    networks:
-      - mock
-    depends_on:
-      - mockserver
 networks:
   mock:
