@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"sync"
 	"testing"
 	"time"
@@ -14,6 +15,76 @@ import (
 const (
 	errFmt string = "want %v, got %v"
 )
+
+func TestLatencyMiddlewareInitShould(t *testing.T) {
+	t.Run("parse a valid latency parameter", func(t *testing.T) {
+		unparsedLatency := "50"
+		expectedLatency := 50
+
+		m := &Middleware{}
+		conf := map[string]string{"latency": unparsedLatency}
+
+		err := m.Init(conf)
+		if err != nil {
+			t.Errorf(errFmt, nil, err)
+		}
+
+		if m.Latency != expectedLatency {
+			t.Errorf(errFmt, expectedLatency, m.Latency)
+		}
+	})
+
+	t.Run("throw an err when the latency parameter is invalid", func(t *testing.T) {
+		unparsedInvalidLatency := "invalidParam"
+
+		m := &Middleware{}
+		conf := map[string]string{"latency": unparsedInvalidLatency}
+
+		err := m.Init(conf)
+		if err == nil {
+			t.Errorf(errFmt, "error", nil)
+		}
+	})
+
+	t.Run("parse valid min/max parameters", func(t *testing.T) {
+		unparsedMin := "50"
+		expectedMin := 50
+		unparsedMax := "100"
+		expectedMax := 100
+
+		expectedMiddleware := &Middleware{
+			Min: expectedMin,
+			Max: expectedMax,
+		}
+
+		m := &Middleware{}
+		conf := map[string]string{
+			"min": unparsedMin,
+			"max": unparsedMax,
+		}
+
+		err := m.Init(conf)
+		if err != nil {
+			t.Errorf(errFmt, nil, err)
+		}
+
+		if !reflect.DeepEqual(expectedMiddleware, m) {
+			t.Errorf(errFmt, expectedMiddleware, m)
+		}
+	})
+
+	t.Run("throw an err when the min/max parameters is invalid", func(t *testing.T) {
+		unparsedInvalidLatency := "invalidParam"
+
+		m := &Middleware{}
+		conf := map[string]string{"latency": unparsedInvalidLatency}
+
+		err := m.Init(conf)
+		if err == nil {
+			t.Errorf(errFmt, "error", nil)
+		}
+	})
+}
 
 func TestLatencyMiddlewareShould(t *testing.T) {
 	t.Run("stay within a range of responses of latency setting", func(t *testing.T) {
