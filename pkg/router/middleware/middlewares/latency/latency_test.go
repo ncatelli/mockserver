@@ -74,10 +74,13 @@ func TestLatencyMiddlewareInitShould(t *testing.T) {
 	})
 
 	t.Run("throw an err when the min/max parameters is invalid", func(t *testing.T) {
-		unparsedInvalidLatency := "invalidParam"
+		unparsedInvalidParam := "invalidParam"
 
 		m := &Middleware{}
-		conf := map[string]string{"latency": unparsedInvalidLatency}
+		conf := map[string]string{
+			"min": unparsedInvalidParam,
+			"max": unparsedInvalidParam,
+		}
 
 		err := m.Init(conf)
 		if err == nil {
