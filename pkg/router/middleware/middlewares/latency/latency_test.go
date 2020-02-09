@@ -155,8 +155,8 @@ func TestLatencyMiddlewareShould(t *testing.T) {
 	})
 
 	t.Run("stay within a range of responses within min/max", func(t *testing.T) {
-		var expectedMin int = 1000
-		var expectedMax int = 2000
+		var expectedMin = 1000
+		var expectedMax = 2000
 
 		var wg sync.WaitGroup
 
