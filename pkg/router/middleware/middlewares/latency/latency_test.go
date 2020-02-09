@@ -1,6 +1,7 @@
 package logging
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"sync"
@@ -15,7 +16,7 @@ const (
 )
 
 func TestLatencyMiddlewareShould(t *testing.T) {
-	t.Run("stay within a range of responses.", func(t *testing.T) {
+	t.Run("stay within a range of responses of latency setting", func(t *testing.T) {
 		var wg sync.WaitGroup
 		for i := 0; i < 1000; i++ {
 			wg.Add(1)
@@ -41,8 +42,79 @@ func TestLatencyMiddlewareShould(t *testing.T) {
 				router.ServeHTTP(rr, req)
 				duration := time.Since(start)
 
-				if duration.Milliseconds() < 1000 || duration.Milliseconds() > 2000 {
-					t.Errorf(errFmt, "between 1000 - 2000", duration.Milliseconds())
+				if duration.Milliseconds() < 1000 || duration.Milliseconds() > 1500 {
+					t.Errorf(errFmt, "between 1000 - 1500", duration.Milliseconds())
+				}
+			}()
+		}
+
+		wg.Wait()
+	})
+
+	t.Run("prefer explicit latency setting over min/max", func(t *testing.T) {
+		req, err := http.NewRequest("GET", "/", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		router := mux.NewRouter()
+		router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {}).Methods("GET")
+
+		latencyMiddleware := &Middleware{
+			Latency: 1000,
+			Min:     2000,
+			Max:     3000,
+		}
+
+		router.Use(latencyMiddleware.Middleware)
+
+		rr := httptest.NewRecorder()
+
+		// start timer
+		start := time.Now()
+		router.ServeHTTP(rr, req)
+		duration := time.Since(start)
+
+		if duration.Milliseconds() < 1000 || duration.Milliseconds() > 1500 {
+			t.Errorf(errFmt, "between 1000 - 1500", duration.Milliseconds())
+		}
+	})
+
+	t.Run("stay within a range of responses within min/max", func(t *testing.T) {
+		var expectedMin int = 1000
+		var expectedMax int = 2000
+
+		var wg sync.WaitGroup
+
+		for i := 0; i < 1000; i++ {
+			wg.Add(1)
+
+			go func() {
+				defer wg.Done()
+				req, err := http.NewRequest("GET", "/", nil)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				router := mux.NewRouter()
+				router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {}).Methods("GET")
+
+				latencyMiddleware := &Middleware{
+					Min: expectedMin,
+					Max: expectedMax,
+				}
+
+				router.Use(latencyMiddleware.Middleware)
+
+				rr := httptest.NewRecorder()
+
+				// start timer
+				start := time.Now()
+				router.ServeHTTP(rr, req)
+				duration := time.Since(start)
+
+				if duration.Milliseconds() < int64(expectedMin) || duration.Milliseconds() > int64(expectedMax+100) {
+					t.Errorf(errFmt, fmt.Sprintf("between %d - %d", expectedMin, expectedMax), duration.Milliseconds())
 				}
 			}()
 		}
