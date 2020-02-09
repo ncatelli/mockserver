@@ -6,7 +6,7 @@
   - weight: 1
     response_headers:
       content-type: text/plain
-    static_response: '{{ .PathVars.embed }}'
+    response_path: /examples/example_response_body.txt 
     response_status: 200
 - path: "/test/weighted"
   method: GET
@@ -21,3 +21,23 @@
       content-type: text/plain
     static_response: ''
     response_status: 500
+- path: "/test/with/required/headers"
+  method: GET
+  request_headers:
+    status: ok
+  handlers:
+  - weight: 1
+    response_headers:
+      content-type: text/plain
+    static_response: 'ok'
+    response_status: 200
+- path: "/test/with/required/query/params"
+  method: GET
+  query_params:
+    status: ok
+  handlers:
+  - weight: 1
+    response_headers:
+      content-type: text/plain
+    static_response: 'ok'
+    response_status: 200
