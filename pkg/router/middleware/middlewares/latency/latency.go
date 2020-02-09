@@ -1,4 +1,4 @@
-package logging
+package latency
 
 import (
 	"math/rand"
