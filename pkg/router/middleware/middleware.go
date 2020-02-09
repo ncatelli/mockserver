@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/ncatelli/mockserver/pkg/router/middleware/drivers/logging"
+	"github.com/ncatelli/mockserver/pkg/router/middleware/middlewares/logging"
 )
 
 var (
