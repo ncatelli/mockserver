@@ -3,6 +3,7 @@ package middleware
 import (
 	"net/http"
 
+	"github.com/ncatelli/mockserver/pkg/router/middleware/middlewares/latency"
 	"github.com/ncatelli/mockserver/pkg/router/middleware/middlewares/logging"
 )
 
@@ -12,6 +13,7 @@ var (
 
 func init() {
 	middlewares["logging"] = &logging.Middleware{}
+	middlewares["latency"] = &latency.Middleware{}
 }
 
 // Middleware defines the necessary functions to configure and implement a

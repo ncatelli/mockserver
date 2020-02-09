@@ -34,6 +34,8 @@ This tool provides a simple framework for generating performance test-ready mock
         - [Middlewares](#middlewares)
             - [logging](#logging)
                 - [settings](#settings)
+            - [latency](#latency)
+                - [settings](#settings-1)
 
 <!-- /TOC -->
 
@@ -171,3 +173,11 @@ The logging handler implements the [gorilla logging handler](https://godoc.org/g
 
 ##### settings
 target (default: `stdout`): a target to write files to. Currently this only supports stdout.
+
+#### latency
+The latency middleware allows injection of artificial latency into a route to mimic either transit or processing time. This latency can be specified either as a static value or as a range of time.
+
+##### settings
+latency (default: `0`): A static latency in milliseconds to inject into a response.
+min     (default: `0`): A minimum value for a range of latency in a response.
+max     (default: `0`): A maximum value for a range of latency in a response.

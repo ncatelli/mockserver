@@ -41,3 +41,14 @@
       content-type: text/plain
     static_response: 'ok'
     response_status: 200
+- path: "/test/with/artificial/latency"
+  method: GET
+  middleware:
+    latency:
+      latency: 100
+  handlers:
+  - weight: 1
+    response_headers:
+      content-type: text/plain
+    static_response: 'ok'
+    response_status: 200
