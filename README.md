@@ -1,4 +1,6 @@
 # mockserver
+![Build tests](https://github.com/ncatelli/mockserver/workflows/Build%20tests/badge.svg?branch=master)
+
 ## General
 This tool provides a simple framework for generating performance test-ready mocks from configuration files.
 
