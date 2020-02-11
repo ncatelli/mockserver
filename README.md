@@ -112,7 +112,7 @@ This field represents a key-value mapping of query parameters that must be set t
 ###### Handlers
 The handlers field takes a weighted list of objects that map directly to the Handler structure. Subfields of handlers represent
 
-- weight: A weighted value to determine the frequency a handler is hit. Higher represents more frequent.
+- weight: A positive weighted value to determine the frequency a handler is hit. Higher represents more frequent hits. Zero represents unrouteable (good for a temporarily disabled handler).
 - response_headers: A key-value store of additional headers to be attached to the response body.
 - static_response: A response body template to respond with. This supercedes the response_path setting and is suitable for short responses.
 - response_path: A file path to a file that will be used to generate the response body. This is more suitable for multi-line responses that will be difficult to fit into a static_response.
