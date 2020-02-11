@@ -1,12 +1,27 @@
 package router
 
 import (
+	"fmt"
 	"math/rand"
 	"net/http"
 	"time"
 
 	"github.com/ncatelli/mockserver/pkg/router/middleware"
 )
+
+const (
+	maxInt64 = 1<<63 - 1
+)
+
+// ErrInvalidWeight is thrown when a handler has a weight outside the
+// acceptable bounds.
+type ErrInvalidWeight struct {
+	handler *Handler
+}
+
+func (e ErrInvalidWeight) Error() string {
+	return fmt.Sprintf("handler %v exceeds maximum total weight of %d", *e.handler, maxInt64)
+}
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
@@ -27,7 +42,12 @@ type Route struct {
 
 // Init performs any setup and initialization around the route.
 func (route *Route) Init() error {
-	route.totalWeight = calculateTotalWeightofHandlers(route.Handlers)
+	tw, err := calculateTotalWeightofHandlers(route.Handlers)
+	if err != nil {
+		return err
+	}
+
+	route.totalWeight = tw
 
 	for k, v := range route.Middleware {
 		m := middleware.Lookup(k)
@@ -69,12 +89,20 @@ func (route *Route) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // calculateTotalWeightofHandlers iterates over all handlers assigned to the
 // route and sums their total weight.
-func calculateTotalWeightofHandlers(handlers []Handler) int {
-	var weight int
+func calculateTotalWeightofHandlers(handlers []Handler) (int, error) {
+	var totalWeight int
 
 	for _, h := range handlers {
-		weight += h.Weight
+		maxhandlerWeight := maxInt64 - totalWeight
+
+		if h.Weight > maxInt64 || h.Weight > maxhandlerWeight || h.Weight < 0 {
+			return -1, ErrInvalidWeight{
+				handler: &h,
+			}
+		}
+
+		totalWeight += h.Weight
 	}
 
-	return weight
+	return totalWeight, nil
 }
