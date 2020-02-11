@@ -55,10 +55,23 @@ func TestRouteWeightCalculationShould(t *testing.T) {
 		}
 
 		expected := 14
-		got := calculateTotalWeightofHandlers(tHandlers)
+		got, _ := calculateTotalWeightofHandlers(tHandlers)
 
 		if expected != got {
 			t.Errorf(errFmt, expected, got)
+		}
+	})
+
+	t.Run("throw an error if the max handler weight would overflow an int64", func(t *testing.T) {
+		tHandlers := []Handler{
+			Handler{Weight: maxInt64},
+			Handler{Weight: 2},
+		}
+
+		got, err := calculateTotalWeightofHandlers(tHandlers)
+
+		if got != -1 && err == nil {
+			t.Errorf(errFmt, ErrInvalidWeight{handler: &tHandlers[1]}, nil)
 		}
 	})
 }
