@@ -95,7 +95,7 @@ func calculateTotalWeightofHandlers(handlers []Handler) (int, error) {
 	for _, h := range handlers {
 		maxhandlerWeight := maxInt64 - totalWeight
 
-		if (h.Weight > maxInt64) || h.Weight > maxhandlerWeight {
+		if h.Weight > maxInt64 || h.Weight > maxhandlerWeight || h.Weight < 0 {
 			return -1, ErrInvalidWeight{
 				handler: &h,
 			}

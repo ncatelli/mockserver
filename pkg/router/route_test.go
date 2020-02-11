@@ -70,8 +70,20 @@ func TestRouteWeightCalculationShould(t *testing.T) {
 
 		got, err := calculateTotalWeightofHandlers(tHandlers)
 
-		if got != -1 && err == nil {
+		if got != -1 || err == nil {
 			t.Errorf(errFmt, ErrInvalidWeight{handler: &tHandlers[1]}, nil)
+		}
+	})
+
+	t.Run("throw an error if a negative weight is defined.", func(t *testing.T) {
+		tHandlers := []Handler{
+			Handler{Weight: -1},
+		}
+
+		got, err := calculateTotalWeightofHandlers(tHandlers)
+
+		if got != -1 || err == nil {
+			t.Errorf(errFmt, ErrInvalidWeight{handler: &tHandlers[0]}, nil)
 		}
 	})
 }
