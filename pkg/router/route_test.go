@@ -87,3 +87,45 @@ func TestRouteWeightCalculationShould(t *testing.T) {
 		}
 	})
 }
+
+func BenchmarkRouterHandlerSelection(b *testing.B) {
+	b.Run("single handler", func(b *testing.B) {
+		r := Route{
+			Handlers: generateTestHandlerSlice(1, 1),
+		}
+
+		for i := 0; i < b.N; i++ {
+			r.selectHandler()
+		}
+	})
+
+	b.Run("two equally-weighted handlers", func(b *testing.B) {
+		r := Route{
+			Handlers: generateTestHandlerSlice(1, 2),
+		}
+
+		for i := 0; i < b.N; i++ {
+			r.selectHandler()
+		}
+	})
+
+	b.Run("two equally-weighted handlers with large weights", func(b *testing.B) {
+		r := Route{
+			Handlers: generateTestHandlerSlice(100, 2),
+		}
+
+		for i := 0; i < b.N; i++ {
+			r.selectHandler()
+		}
+	})
+}
+
+func generateTestHandlerSlice(weight int, count int) []Handler {
+	h := make([]Handler, count)
+
+	for i := 0; i < count; i++ {
+		h = append(h, Handler{Weight: weight})
+	}
+
+	return h
+}

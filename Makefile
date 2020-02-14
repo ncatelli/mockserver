@@ -11,6 +11,9 @@ build-docker: | fmt test
 test:
 	go test -race -cover ./...
 
+benchmark:
+	go test -benchmem -bench . ./...
+
 fmt:
 	test -z $(shell go fmt ./...)
 

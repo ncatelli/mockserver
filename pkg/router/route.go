@@ -68,6 +68,19 @@ func (route *Route) Init() error {
 // ServeHTTP implements the http.Handler interface for pipelining a request
 // further into a handler.
 func (route *Route) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	handler := route.selectHandler()
+
+	// Generate handler chain with middlewares
+	for i := len(route.middlewareHandlers) - 1; i >= 0; i-- {
+		handler = route.middlewareHandlers[i].Middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// selectHandler randomly selects and returns a handler from the route
+// handlers pool.
+func (route *Route) selectHandler() http.Handler {
 	var handler http.Handler
 	hw := rand.Intn(route.totalWeight + 1)
 
@@ -79,12 +92,7 @@ func (route *Route) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Generate handler chain with middlewares
-	for i := len(route.middlewareHandlers) - 1; i >= 0; i-- {
-		handler = route.middlewareHandlers[i].Middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
+	return handler
 }
 
 // calculateTotalWeightofHandlers iterates over all handlers assigned to the
