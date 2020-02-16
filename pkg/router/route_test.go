@@ -1,6 +1,8 @@
 package router
 
 import (
+	"fmt"
+	"math"
 	"reflect"
 	"testing"
 
@@ -88,36 +90,20 @@ func TestRouteWeightCalculationShould(t *testing.T) {
 	})
 }
 
-func BenchmarkRouterHandlerSelection(b *testing.B) {
-	b.Run("single handler", func(b *testing.B) {
-		r := Route{
-			Handlers: generateTestHandlerSlice(1, 1),
-		}
+func BenchmarkRouterHandlerSelectionWith(b *testing.B) {
+	for x := 0.0; x <= 6; x++ {
+		pow := math.Pow(2, x)
+		h := generateTestHandlerSlice(1, int(pow))
+		b.Run(fmt.Sprintf("%.0f equally-weighted handlers", pow), func(b *testing.B) {
+			r := Route{
+				Handlers: h,
+			}
 
-		for i := 0; i < b.N; i++ {
-			r.selectHandler()
-		}
-	})
-
-	b.Run("two equally-weighted handlers", func(b *testing.B) {
-		r := Route{
-			Handlers: generateTestHandlerSlice(1, 2),
-		}
-
-		for i := 0; i < b.N; i++ {
-			r.selectHandler()
-		}
-	})
-
-	b.Run("two equally-weighted handlers with large weights", func(b *testing.B) {
-		r := Route{
-			Handlers: generateTestHandlerSlice(100, 2),
-		}
-
-		for i := 0; i < b.N; i++ {
-			r.selectHandler()
-		}
-	})
+			for i := 0; i < b.N; i++ {
+				r.selectHandler()
+			}
+		})
+	}
 }
 
 func generateTestHandlerSlice(weight int, count int) []Handler {
