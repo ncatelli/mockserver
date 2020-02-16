@@ -7,6 +7,13 @@ import (
 	"github.com/caarlos0/env/v6"
 )
 
+// ErrUndefinedConfig represents a route configuration hasn't been specified.
+type ErrUndefinedConfig struct{}
+
+func (e *ErrUndefinedConfig) Error() string {
+	return "route configuration has not been specified"
+}
+
 // Config stores configuration parameters for interacting with the server at a
 // global level. This can include listening address, feature flags and other
 // configurations.
@@ -31,5 +38,11 @@ func New() (Config, error) {
 // locations (URL or Filepath). On success it returns an io.Reader for this
 // file otherwise an error is returned.
 func (c *Config) Load() (io.Reader, error) {
-	return nil, nil
+	if len(c.ConfigPath) > 0 {
+
+	} else if len(c.ConfigURL.String()) > 0 {
+
+	}
+
+	return nil, &ErrUndefinedConfig{}
 }

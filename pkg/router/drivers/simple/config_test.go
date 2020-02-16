@@ -2,6 +2,7 @@ package simple
 
 import (
 	"log"
+	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -11,6 +12,7 @@ import (
 
 const (
 	goodConfigPath string = "test_fixtures/good.yaml"
+	badConfigPath  string = "test_fixtures/bad.yaml"
 	errFmt         string = "want %v, got %v"
 )
 
@@ -38,6 +40,35 @@ var expectedRoutes = []*router.Route{
 	},
 }
 
+func TestLoadShould(t *testing.T) {
+	t.Run("load a valid configuration", func(t *testing.T) {
+		gp, err := filepath.Rel("", goodConfigPath)
+		file, err := os.Open(gp)
+		defer file.Close()
+
+		routes, err := Load(file)
+		if err != nil {
+			t.Errorf(errFmt, expectedRoutes, err)
+		} else if !reflect.DeepEqual(routes, expectedRoutes) {
+			t.Errorf(errFmt, expectedRoutes, routes)
+		}
+	})
+
+	t.Run("return an error a non-yaml parseable file.", func(t *testing.T) {
+		bp, err := filepath.Rel("", badConfigPath)
+		file, err := os.Open(bp)
+		defer file.Close()
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if _, err := LoadFromFile(bp); err == nil {
+			t.Errorf(errFmt, "an error", err)
+		}
+	})
+}
+
 func TestLoadFromFileShould(t *testing.T) {
 	t.Run("load a valid configuration", func(t *testing.T) {
 		gp, err := filepath.Rel("", goodConfigPath)
@@ -54,12 +85,12 @@ func TestLoadFromFileShould(t *testing.T) {
 	})
 
 	t.Run("return an error a non-yaml parseable file.", func(t *testing.T) {
-		bp, err := filepath.Rel("", goodConfigPath)
+		bp, err := filepath.Rel("", badConfigPath)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		if _, err := LoadFromFile(bp); err != nil {
+		if _, err := LoadFromFile(bp); err == nil {
 			t.Errorf(errFmt, "an error", err)
 		}
 	})

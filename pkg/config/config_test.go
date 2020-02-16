@@ -44,3 +44,14 @@ func TestInitializingAConfigShould(t *testing.T) {
 		}
 	})
 }
+
+func TestConfigurationLoadingShould(t *testing.T) {
+	t.Run("return an ErrUnspecifiedConfig when no config option is set", func(t *testing.T) {
+		c := Config{}
+
+		_, err := c.Load()
+		if err == nil {
+			t.Errorf(errFmt, "error", err)
+		}
+	})
+}
