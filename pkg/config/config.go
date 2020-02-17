@@ -1,8 +1,12 @@
 package config
 
 import (
+	"bytes"
 	"io"
+	"io/ioutil"
+	"net/http"
 	"net/url"
+	"path/filepath"
 
 	"github.com/caarlos0/env/v6"
 )
@@ -39,9 +43,25 @@ func New() (Config, error) {
 // file otherwise an error is returned.
 func (c *Config) Load() (io.Reader, error) {
 	if len(c.ConfigPath) > 0 {
+		b, err := ioutil.ReadFile(filepath.Clean(c.ConfigPath))
+		if err != nil {
+			return nil, err
+		}
 
+		return bytes.NewReader(b), nil
 	} else if len(c.ConfigURL.String()) > 0 {
+		resp, err := http.Get(c.ConfigURL.String())
+		if err != nil {
+			return nil, err
+		}
 
+		defer resp.Body.Close()
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		return bytes.NewReader(b), nil
 	}
 
 	return nil, &ErrUndefinedConfig{}
