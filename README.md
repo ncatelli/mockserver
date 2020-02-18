@@ -72,8 +72,12 @@ $> make test
 ### Services
 The mockserver service can be configured via the following environment variables:
 
-- ADDR:        `string` The server address mockserver binds to.
-- CONFIG_PATH: `string` A filesystem path to the simple driver config file.
+- ADDR:        `string`  The server address mockserver binds to.
+- CONFIG_PATH: `string`  A filesystem path to the simple driver config file.
+- CONFIG_URL:  `url.URL` A URL path to fetch the configuration file from. This
+    is useful for when a service wants to publish its own configuration file.
+
+It's worth noting that _EITHER_ `CONFIG_PATH` or `CONFIG_URL` should be sent. If both are set, `CONFIG_PATH` takes priority.
 
 ### Response Bodies
 All response bodies in for handlers are valid [go templates](https://golang.org/pkg/html/template/). In addition some helper data is included in each template variable to be referenced for rendering. This includes the following:
