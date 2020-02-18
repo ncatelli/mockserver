@@ -1,12 +1,27 @@
 package config
 
 import (
+	"bytes"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"os"
+	"reflect"
 	"testing"
 )
 
 const (
-	errFmt string = "want %v, got %v"
+	errFmt           string = "want %v, got %v"
+	goodResponseBody        = `
+- path: "/test/weighted/errors"
+  method: GET
+  handlers:
+    - weight: 2
+      response_headers:
+        content-type: application/json
+      static_response: '{"resp": "Ok"}'
+      response_status: 200
+`
 )
 
 func TestInitializingAConfigShould(t *testing.T) {
@@ -52,6 +67,35 @@ func TestConfigurationLoadingShould(t *testing.T) {
 		_, err := c.Load()
 		if err == nil {
 			t.Errorf(errFmt, "error", err)
+		}
+	})
+
+	t.Run("load a configuration from a URL when specified", func(t *testing.T) {
+		// generate a test server so we can capture and inspect the request
+		testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text/yaml; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(goodResponseBody))
+		}))
+		defer func() { testServer.Close() }()
+
+		// setup Config
+		testURL, _ := url.Parse(testServer.URL)
+		c := Config{
+			ConfigURL: *testURL,
+		}
+
+		reader, err := c.Load()
+		if err != nil {
+			t.Errorf(errFmt, nil, err)
+		}
+
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(reader)
+		s := buf.String()
+
+		if !reflect.DeepEqual(goodResponseBody, s) {
+			t.Errorf(errFmt, goodResponseBody, s)
 		}
 	})
 }
