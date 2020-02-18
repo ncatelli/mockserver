@@ -11,12 +11,12 @@ import (
 )
 
 const (
-	errFmt           string = "want %v, got %v"
-	goodResponseBody        = `
-- path: "/test/weighted/errors"
+	errFmt              = "want %v, got %v"
+	goodTestFixturePath = "test_fixtures/good.yaml"
+	goodResponseBody    = `- path: "/test"
   method: GET
   handlers:
-    - weight: 2
+    - weight: 1
       response_headers:
         content-type: application/json
       static_response: '{"resp": "Ok"}'
@@ -83,6 +83,25 @@ func TestConfigurationLoadingShould(t *testing.T) {
 		testURL, _ := url.Parse(testServer.URL)
 		c := Config{
 			ConfigURL: *testURL,
+		}
+
+		reader, err := c.Load()
+		if err != nil {
+			t.Errorf(errFmt, nil, err)
+		}
+
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(reader)
+		s := buf.String()
+
+		if !reflect.DeepEqual(goodResponseBody, s) {
+			t.Errorf(errFmt, goodResponseBody, s)
+		}
+	})
+
+	t.Run("load a configuration from a filepath when specified", func(t *testing.T) {
+		c := Config{
+			ConfigPath: goodTestFixturePath,
 		}
 
 		reader, err := c.Load()
