@@ -1,0 +1,8 @@
+- path: "/test"
+  method: GET
+  handlers:
+    - weight: 1
+      response_headers:
+        content-type: application/json
+      static_response: '{"resp": "Ok"}'
+      response_status: 200
