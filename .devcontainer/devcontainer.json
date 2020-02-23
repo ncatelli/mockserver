@@ -1,5 +1,5 @@
 // For format details, see https://aka.ms/vscode-remote/devcontainer.json or this file's README at:
-// https://github.com/microsoft/vscode-dev-containers/tree/v0.101.0/containers/go
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.101.1/containers/go
 {
 	"name": "Go",
 	"dockerFile": "Dockerfile",
@@ -8,7 +8,7 @@
 	// Set *default* container specific settings.json values on container create.
 	"settings": { 
 		"terminal.integrated.shell.linux": "/bin/bash",
-		"go.gopath": "/go"
+		"go.gopath": ""
 	},
 	
 	// Add the IDs of extensions you want installed when the container is created.
