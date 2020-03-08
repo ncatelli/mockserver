@@ -17,9 +17,6 @@ import (
 	"github.com/ncatelli/mockserver/pkg/router/drivers/simple"
 )
 
-// Generate plugins
-//go:generate go run ./pkg/generator/gen.go
-
 func buildRouterFromConfig(c *config.Config) *mux.Router {
 	routes, err := simple.LoadFromFile(c.ConfigPath)
 	if err != nil {

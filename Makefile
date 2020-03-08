@@ -2,11 +2,11 @@ APP_NAME="mockserver"
 IMGNAME="ncatelli/${APP_NAME}"
 PKG="github.com/PacketFire/${APP_NAME}"
 
-build: | generate fmt lint test
+build: | generate lint test
 	go build
 
 generate:
-	go generate
+	go generate ./...
 
 build-docker: | generate fmt test
 	docker build -t ${IMGNAME}:latest .
