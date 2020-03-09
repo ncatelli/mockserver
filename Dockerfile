@@ -7,7 +7,9 @@ ENV GOPATH=""
 
 COPY . /go/
 
-RUN cd /go && go build -o /${APP_NAME}
+RUN cd /go && \
+    go generate ./... && \
+    go build -o /${APP_NAME}
 
 FROM $BASEIMG
 LABEL maintainer="Nate Catelli <ncatelli@packetfire.org>"
