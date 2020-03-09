@@ -64,7 +64,7 @@ func (handler *Handler) getBodyTemplate() (*template.Template, error) {
 func (handler *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	t, err := handler.getBodyTemplate()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}
 
