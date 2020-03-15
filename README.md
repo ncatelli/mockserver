@@ -21,6 +21,9 @@ This tool provides a simple framework for generating performance test-ready mock
         - [Response Bodies](#response-bodies)
             - [Template Parameters](#template-parameters)
                 - [Path Variables](#path-variables)
+            - [Template Functions](#template-functions)
+                - [GTF Functions](#gtf-functions)
+                - [Custom Generators](#custom-generators)
         - [Drivers](#drivers)
             - [yaml](#yaml)
                 - [Parameters](#parameters)
@@ -90,6 +93,22 @@ Template parameters are passed directly into the template via the [data argument
 
 ##### Path Variables
 The mockserver allow for the parsing of variables directly out of a url path through the [gorilla/mux router](http://www.gorillatoolkit.org/pkg/mux#Vars) and more information on what kind of pattern matching can be accomplished by the router can be found at the preceeding link.
+
+#### Template Functions
+Mocking functionality is implatemented via golang's [stdlib template functions](https://golang.org/pkg/html/template/#FuncMap). A few additional libraries and features have been included to aid in extending this functionality.
+
+##### GTF Functions
+[GTF](https://github.com/leekchan/gtf) is a template function library with the stated goal of implementing the functions included in jinja2. Further documentation on the functions included can be found at their github page.
+
+##### Custom Generators
+Custom generators provides a simple way to add new functions that will be compiled into the mockserver at build time.
+
+New generators can be added by:
+
+- Creating a new package under github.com/ncatelli/mockserver/pkg/router/generator/plugins
+  - This package __MUST__ include a `Generator` type.
+  - This new `Generator` __MUST__ satisfy the interface `github.com/ncatelli/mockserver/pkg/router/generator.Generator`
+- Rerun `make` to generate the correct package imports and build mockserver with the new plugin.
 
 ### Drivers
 #### yaml
