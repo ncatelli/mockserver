@@ -152,5 +152,4 @@ func TestRouterShouldNotMatch(t *testing.T) {
 			t.Errorf(errFmt, true, false)
 		}
 	})
-
 }
