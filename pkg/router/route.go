@@ -89,6 +89,7 @@ func (route *Route) selectHandler() http.Handler {
 		hw -= h.Weight
 		if hw <= 0 {
 			handler = &h
+			break
 		}
 	}
 
