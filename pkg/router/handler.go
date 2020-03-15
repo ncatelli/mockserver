@@ -7,12 +7,16 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/leekchan/gtf"
+	"github.com/ncatelli/mockserver/pkg/router/generator"
 )
 
 type templateVariables struct {
 	Request  *http.Request
 	PathVars map[string]string
 }
+
+// Generate plugins
+//go:generate go run ./generator/gen.go
 
 // Handler includes all the metadata to decide on and serve a response.
 type Handler struct {
@@ -47,7 +51,7 @@ func (handler *Handler) getBodyTemplate() (*template.Template, error) {
 		body = string(bb)
 	}
 
-	t, err := template.New("").Funcs(gtf.GtfFuncMap).Parse(body)
+	t, err := template.New("").Funcs(gtf.GtfFuncMap).Funcs(generator.PluginsFuncMap()).Parse(body)
 	if err != nil {
 		return nil, err
 	}
