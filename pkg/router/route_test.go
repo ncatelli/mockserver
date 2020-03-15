@@ -3,6 +3,7 @@ package router
 import (
 	"fmt"
 	"math"
+	"math/rand"
 	"reflect"
 	"testing"
 
@@ -90,6 +91,24 @@ func TestRouteWeightCalculationShould(t *testing.T) {
 	})
 }
 
+func TestHandlerSelectionShould(t *testing.T) {
+	t.Run("return the first handler that brings the handler weight to 0", func(t *testing.T) {
+		r := Route{
+			Handlers: []Handler{
+				Handler{Weight: 2},
+				Handler{Weight: 1},
+			},
+		}
+
+		expected := &r.Handlers[0]
+		got := r.selectHandler(2)
+
+		if !reflect.DeepEqual(expected, got) {
+			t.Errorf(errFmt, expected, got)
+		}
+	})
+}
+
 func BenchmarkRouterHandlerSelectionWith(b *testing.B) {
 	for x := 0.0; x <= 6; x++ {
 		pow := math.Pow(2, x)
@@ -100,7 +119,7 @@ func BenchmarkRouterHandlerSelectionWith(b *testing.B) {
 			}
 
 			for i := 0; i < b.N; i++ {
-				r.selectHandler()
+				r.selectHandler(rand.Intn(r.totalWeight + 1))
 			}
 		})
 	}
