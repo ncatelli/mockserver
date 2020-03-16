@@ -2,7 +2,7 @@ APP_NAME="mockserver"
 IMGNAME="ncatelli/${APP_NAME}"
 PKG="github.com/PacketFire/${APP_NAME}"
 
-build: | generate lint test
+build: | generate
 	go build
 
 generate:
@@ -27,7 +27,7 @@ clean-docker:
 
 clean: clean-docker
 	@rm -f ${APP_NAME} || true
-	@rm ./pkg/generator/plugins.go
+	@rm ./pkg/router/generator/plugins.go
 
 lint:
 	golint -set_exit_status ./...
