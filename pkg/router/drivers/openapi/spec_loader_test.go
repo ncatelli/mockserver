@@ -2,8 +2,10 @@ package openapi
 
 import (
 	"bytes"
+	"encoding/json"
 	"testing"
 
+	"github.com/go-openapi/loads"
 	"github.com/ncatelli/mockserver/pkg/router"
 )
 
@@ -62,5 +64,36 @@ var expectedRoutes = []*router.Route{
 func TestLoadShould(t *testing.T) {
 	t.Run("load a valid configuration", func(t *testing.T) {
 		Load(bytes.NewReader(goodConfig))
+	})
+}
+
+func TestGenerateRouteSwaggerPathShould(t *testing.T) {
+	var knownPath string = "/test/weighted/errors"
+	goodDoc, _ := loads.Analyzed(json.RawMessage(goodConfig), "")
+	goodPath := goodDoc.Spec().Paths.Paths[knownPath]
+	goodOp := &op{Name: "Get", Op: goodPath.Get}
+
+	t.Run("generate a known good route", func(t *testing.T) {
+		r, e := generateRouteFromSwaggerPathOperation(knownPath, goodOp)
+		if e != nil {
+			t.Error(e)
+		}
+
+		if r.Path != knownPath {
+			t.Errorf(errFmt, knownPath, r.Path)
+		}
+	})
+}
+
+func TestGetPathItemOperations(t *testing.T) {
+	var knownPath string = "/test/weighted/errors"
+	goodDoc, _ := loads.Analyzed(json.RawMessage(goodConfig), "")
+	gp := goodDoc.Spec().Paths.Paths[knownPath]
+
+	t.Run("returns expected operations", func(t *testing.T) {
+		ops := getPathItemOperations(gp)
+		if len(ops) != 1 || ops[0].Name != "GET" {
+			t.Errorf(errFmt, "map contained GET", false)
+		}
 	})
 }
