@@ -1,11 +1,12 @@
 package openapi
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 
-	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/go-openapi/loads"
 	"github.com/ncatelli/mockserver/pkg/router"
 )
 
@@ -19,12 +20,12 @@ func Load(data io.Reader) ([]*router.Route, error) {
 		return routes, err
 	}
 
-	swagger, err := openapi3.NewSwaggerLoader().LoadSwaggerFromData(b)
+	swagger, err := loads.Analyzed(json.RawMessage(b), "")
 	if err != nil {
 		return routes, err
 	}
 
-	fmt.Print(swagger.Info.Description)
+	fmt.Print(swagger.Spec().Info.Version)
 
 	return routes, nil
 }

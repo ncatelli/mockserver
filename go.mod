@@ -2,7 +2,7 @@ module github.com/ncatelli/mockserver
 
 require (
 	github.com/caarlos0/env/v6 v6.1.0
-	github.com/getkin/kin-openapi v0.3.0
+	github.com/go-openapi/loads v0.19.5
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.3
 	github.com/leekchan/gtf v0.0.0-20190214083521-5fba33c5b00b
