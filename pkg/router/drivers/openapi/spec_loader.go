@@ -41,6 +41,7 @@ func Load(data io.Reader) ([]*router.Route, error) {
 		return routes, err
 	}
 
+	// load and expand the spec
 	swagger, err := loads.Analyzed(json.RawMessage(b), "")
 	if err != nil {
 		return routes, err
@@ -68,7 +69,15 @@ func Load(data io.Reader) ([]*router.Route, error) {
 // corresponding mock server route.
 func generateRouteFromSwaggerPathOperation(urlPath string, o *op) (*router.Route, error) {
 	return &router.Route{
-		Path: urlPath,
+		Path:   urlPath,
+		Method: o.Name,
+		Handlers: []router.Handler{
+			router.Handler{
+				ResponseHeaders: map[string]string{
+					"content-type": o.Op.Produces[0],
+				},
+			},
+		},
 	}, nil
 }
 
