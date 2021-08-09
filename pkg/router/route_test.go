@@ -31,15 +31,15 @@ func TestRouteInitShould(t *testing.T) {
 	t.Run("assign the total weight of all handlers to the route", func(t *testing.T) {
 		tRoute := Route{
 			Handlers: []Handler{
-				Handler{Weight: 1},
-				Handler{Weight: 2},
+				{Weight: 1},
+				{Weight: 2},
 			},
 		}
 
 		tRoute.Init()
 
-		expected := []int{2, 1}
-		got := make([]int, 0, len(tRoute.strideHandlers))
+		expected := []uint{2, 1}
+		got := make([]uint, 0, len(tRoute.strideHandlers))
 		for _, sH := range tRoute.strideHandlers {
 			got = append(got, sH.stride)
 		}
@@ -54,19 +54,5 @@ func TestRouteInitShould(t *testing.T) {
 }
 
 func TestHandlerSelectionShould(t *testing.T) {
-	t.Run("return the first handler that brings the handler weight to 0", func(t *testing.T) {
-		r := Route{
-			Handlers: []Handler{
-				Handler{Weight: 2},
-				Handler{Weight: 1},
-			},
-		}
 
-		expected := &r.Handlers[0]
-		got := r.selectHandler(2)
-
-		if !reflect.DeepEqual(expected, got) {
-			t.Errorf(errFmt, expected, got)
-		}
-	})
 }

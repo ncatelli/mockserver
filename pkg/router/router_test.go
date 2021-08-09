@@ -9,14 +9,6 @@ import (
 
 type ErrRouteMatchFailure struct{}
 
-func generateTestHandler() []Handler {
-	return []Handler{Handler{
-		Weight:         1,
-		StaticResponse: "Ok",
-		ResponseStatus: 200,
-	}}
-}
-
 func routerHelper(req *http.Request, route *Route) bool {
 	rm := &mux.RouteMatch{}
 	router, _ := New([]*Route{route})

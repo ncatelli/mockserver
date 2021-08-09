@@ -28,8 +28,8 @@ func init() {
 }
 
 type StrideHandler struct {
-	pass    int
-	stride  int
+	pass    uint
+	stride  uint
 	handler Handler
 }
 
@@ -59,12 +59,12 @@ type Route struct {
 func (route *Route) Init() error {
 
 	handlerCount := len(route.Handlers)
-	weights := make([]int, 0, handlerCount)
+	weights := make([]uint, 0, handlerCount)
 	for _, h := range route.Handlers {
 		weights = append(weights, h.Weight)
 	}
 
-	weightsLCM := 0
+	var weightsLCM uint = 0
 	if handlerCount == 1 {
 		weightsLCM = route.Handlers[0].Weight
 	} else if handlerCount > 1 {
@@ -105,16 +105,14 @@ func (route *Route) Init() error {
 // ServeHTTP implements the http.Handler interface for pipelining a request
 // further into a handler.
 func (route *Route) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	lowestPassIdx := 0
+	var lowestPassIdx uint = 0
 	for idx, h := range route.strideHandlers {
-		if h.pass > lowestPassIdx {
-			lowestPassIdx = idx
+		if h.pass < lowestPassIdx {
+			lowestPassIdx = uint(idx)
 		}
 	}
 
-	sH := route.strideHandlers[lowestPassIdx]
-	var handler http.Handler = &sH
-	//handler := route.selectHandler(rand.Intn(route.totalWeight + 1))
+	var handler http.Handler = &(route.strideHandlers[lowestPassIdx])
 
 	// Generate handler chain with middlewares
 	for i := len(route.middlewareHandlers) - 1; i >= 0; i-- {
@@ -124,24 +122,7 @@ func (route *Route) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	handler.ServeHTTP(w, r)
 }
 
-// selectHandler randomly selects and returns a handler from the route
-// handlers pool.
-func (route *Route) selectHandler(hw int) http.Handler {
-	var handler http.Handler
-
-	// make handler selection based on weight.
-	for _, h := range route.Handlers {
-		hw -= h.Weight
-		if hw <= 0 {
-			handler = &h
-			break
-		}
-	}
-
-	return handler
-}
-
-func gcd(a, b int) int {
+func gcd(a, b uint) uint {
 	for b != 0 {
 		t := b
 		b = a % b
@@ -150,7 +131,7 @@ func gcd(a, b int) int {
 	return a
 }
 
-func lcm(a, b int, integers ...int) int {
+func lcm(a, b uint, integers ...uint) uint {
 	result := a * b / gcd(a, b)
 
 	for i := 0; i < len(integers); i++ {
