@@ -27,6 +27,21 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
+type StrideHandler struct {
+	pass    int
+	stride  int
+	handler Handler
+}
+
+// ServeHTTP wraps an inner handler's ServeHTTP but increments the enclosed
+// pass by it's stride.
+func (sH *StrideHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// incrememt pass by stride
+	sH.pass += sH.stride
+
+	sH.handler.ServeHTTP(w, r)
+}
+
 // Route includes all routing data to build a route and forward to an
 // appropriate router. This is handed off to the router for the live routing.
 type Route struct {
@@ -36,18 +51,40 @@ type Route struct {
 	RequestHeaders     map[string]string            `yaml:"request_headers"`
 	Middleware         map[string]map[string]string `yaml:"middleware"`
 	Handlers           []Handler                    `yaml:"handlers"`
+	strideHandlers     []StrideHandler
 	middlewareHandlers []middleware.Middleware
-	totalWeight        int
 }
 
 // Init performs any setup and initialization around the route.
 func (route *Route) Init() error {
-	tw, err := calculateTotalWeightofHandlers(route.Handlers)
-	if err != nil {
-		return err
+
+	handlerCount := len(route.Handlers)
+	weights := make([]int, 0, handlerCount)
+	for _, h := range route.Handlers {
+		weights = append(weights, h.Weight)
 	}
 
-	route.totalWeight = tw
+	weightsLCM := 0
+	if handlerCount == 1 {
+		weightsLCM = route.Handlers[0].Weight
+	} else if handlerCount > 1 {
+		a := weights[0]
+		b := weights[1]
+		rem := weights[2:]
+
+		weightsLCM = lcm(a, b, rem...)
+	}
+
+	for _, h := range route.Handlers {
+		stride := weightsLCM / h.Weight
+		sH := StrideHandler{
+			stride:  stride,
+			pass:    0,
+			handler: h,
+		}
+
+		route.strideHandlers = append(route.strideHandlers, sH)
+	}
 
 	for k, v := range route.Middleware {
 		m := middleware.Lookup(k)
@@ -68,7 +105,16 @@ func (route *Route) Init() error {
 // ServeHTTP implements the http.Handler interface for pipelining a request
 // further into a handler.
 func (route *Route) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	handler := route.selectHandler(rand.Intn(route.totalWeight + 1))
+	lowestPassIdx := 0
+	for idx, h := range route.strideHandlers {
+		if h.pass > lowestPassIdx {
+			lowestPassIdx = idx
+		}
+	}
+
+	sH := route.strideHandlers[lowestPassIdx]
+	var handler http.Handler = &sH
+	//handler := route.selectHandler(rand.Intn(route.totalWeight + 1))
 
 	// Generate handler chain with middlewares
 	for i := len(route.middlewareHandlers) - 1; i >= 0; i-- {
@@ -95,22 +141,21 @@ func (route *Route) selectHandler(hw int) http.Handler {
 	return handler
 }
 
-// calculateTotalWeightofHandlers iterates over all handlers assigned to the
-// route and sums their total weight.
-func calculateTotalWeightofHandlers(handlers []Handler) (int, error) {
-	var totalWeight int
+func gcd(a, b int) int {
+	for b != 0 {
+		t := b
+		b = a % b
+		a = t
+	}
+	return a
+}
 
-	for _, h := range handlers {
-		maxhandlerWeight := maxInt64 - totalWeight
+func lcm(a, b int, integers ...int) int {
+	result := a * b / gcd(a, b)
 
-		if h.Weight > maxInt64 || h.Weight > maxhandlerWeight || h.Weight < 0 {
-			return -1, ErrInvalidWeight{
-				handler: &h,
-			}
-		}
-
-		totalWeight += h.Weight
+	for i := 0; i < len(integers); i++ {
+		result = lcm(result, integers[i])
 	}
 
-	return totalWeight, nil
+	return result
 }
