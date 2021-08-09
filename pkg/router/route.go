@@ -27,6 +27,7 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
+// StrideHandlers wraps the Handler type with a precomputed stride and pass context.
 type StrideHandler struct {
 	pass    uint
 	stride  uint
