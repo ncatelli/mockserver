@@ -105,10 +105,13 @@ func (route *Route) Init() error {
 // ServeHTTP implements the http.Handler interface for pipelining a request
 // further into a handler.
 func (route *Route) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var lowestPassIdx uint = 0
+	// set to max of uint so first value is guaranteed to be <= value.
+	var lowestPass = ^uint(0)
+	lowestPassIdx := 0
 	for idx, h := range route.strideHandlers {
-		if h.pass < lowestPassIdx {
-			lowestPassIdx = uint(idx)
+		if h.pass < lowestPass {
+			lowestPass = h.pass
+			lowestPassIdx = idx
 		}
 	}
 

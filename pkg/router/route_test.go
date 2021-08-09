@@ -28,7 +28,7 @@ func TestRouteUnmarshalingShould(t *testing.T) {
 }
 
 func TestRouteInitShould(t *testing.T) {
-	t.Run("assign the total weight of all handlers to the route", func(t *testing.T) {
+	t.Run("generate the expected stride value for each route.", func(t *testing.T) {
 		tRoute := Route{
 			Handlers: []Handler{
 				{Weight: 1},
