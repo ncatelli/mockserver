@@ -103,9 +103,9 @@ func (route *Route) Init() error {
 			// incrememt pass by stride
 			sH.pass += sH.stride
 
-			var middlewareHandler http.Handler
+			var middlewareHandler http.Handler = sH
 			// Generate handler chain with middlewares
-			for i := middlewareCount - 1; i >= 0; i-- {
+			for i := middlewareCount; i > 0; i-- {
 				middlewareHandler = middlewareHandlers[i].Middleware(sH)
 			}
 
