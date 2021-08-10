@@ -78,3 +78,46 @@ func TestHandlerSelectionShould(t *testing.T) {
 		}
 	})
 }
+
+func BenchmarkRouterHandlerSelectionWith(b *testing.B) {
+	successHandler := Handler{
+		Weight:         1,
+		ResponseStatus: 200,
+		StaticResponse: "Ok",
+	}
+	failureHandler := Handler{
+		Weight:         1,
+		ResponseStatus: 500,
+		StaticResponse: "",
+	}
+	b.Run("equally-weighted handlers", func(b *testing.B) {
+		r := &Route{
+			Path:     "/",
+			Method:   "GET",
+			Handlers: []Handler{successHandler, failureHandler},
+		}
+		r.Init()
+
+		for i := 0; i < b.N; i++ {
+			<-r.handlerChan
+		}
+
+	})
+
+	b.Run("unequally-weighted handlers", func(b *testing.B) {
+		unequalSuccessHandler := successHandler
+		unequalSuccessHandler.Weight = 2
+		r := &Route{
+			Path:     "/",
+			Method:   "GET",
+			Handlers: []Handler{unequalSuccessHandler, failureHandler},
+		}
+		r.Init()
+
+		for i := 0; i < b.N; i++ {
+			<-r.handlerChan
+		}
+
+	})
+
+}
