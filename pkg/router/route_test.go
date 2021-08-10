@@ -42,7 +42,7 @@ func TestHandlerSelectionShould(t *testing.T) {
 		StaticResponse: "",
 	}
 
-	t.Run("return handlers in deterministic pattern for weight", func(t *testing.T) {
+	t.Run("return handlers in deterministic pattern for unequally-weighted handlers", func(t *testing.T) {
 		r := &Route{
 			Path:     "/",
 			Method:   "GET",
@@ -50,7 +50,7 @@ func TestHandlerSelectionShould(t *testing.T) {
 		}
 		r.Init()
 
-		samples := 9
+		samples := 10
 		responses := make([]*httptest.ResponseRecorder, 0, samples)
 
 		for i := 0; i < samples; i++ {
@@ -67,7 +67,45 @@ func TestHandlerSelectionShould(t *testing.T) {
 			responses = append(responses, rr)
 		}
 
-		expectedResponseCodes := []int{200, 500, 200, 500, 200, 200, 500, 200, 200}
+		expectedResponseCodes := []int{200, 500, 200, 500, 200, 200, 500, 200, 200, 500}
+		responseCodes := make([]int, 0, len(responses))
+		for _, res := range responses {
+			responseCodes = append(responseCodes, res.Code)
+		}
+
+		if !reflect.DeepEqual(expectedResponseCodes, responseCodes) {
+			t.Errorf(errFmt, expectedResponseCodes, responseCodes)
+		}
+	})
+
+	t.Run("return handlers in deterministic pattern for equally-weighted handlers", func(t *testing.T) {
+		equalSuccessHandler := successHandler
+		equalSuccessHandler.Weight = 1
+		r := &Route{
+			Path:     "/",
+			Method:   "GET",
+			Handlers: []Handler{equalSuccessHandler, failureHandler},
+		}
+		r.Init()
+
+		samples := 10
+		responses := make([]*httptest.ResponseRecorder, 0, samples)
+
+		for i := 0; i < samples; i++ {
+			req, err := http.NewRequest("GET", "/", nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			rr := httptest.NewRecorder()
+			router := mux.NewRouter()
+			router.Handle("/", r).Methods("GET")
+
+			router.ServeHTTP(rr, req)
+			responses = append(responses, rr)
+		}
+
+		expectedResponseCodes := []int{200, 500, 200, 500, 200, 500, 200, 500, 200, 500}
 		responseCodes := make([]int, 0, len(responses))
 		for _, res := range responses {
 			responseCodes = append(responseCodes, res.Code)
