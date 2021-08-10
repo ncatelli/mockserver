@@ -25,12 +25,7 @@ type StrideHandler struct {
 	handler Handler
 }
 
-// ServeHTTP wraps an inner handler's ServeHTTP but increments the enclosed
-// pass by it's stride.
 func (sH *StrideHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// incrememt pass by stride
-	sH.pass += sH.stride
-
 	sH.handler.ServeHTTP(w, r)
 }
 
@@ -64,25 +59,17 @@ func (route *Route) Init() error {
 		route.middlewareHandlers = append(route.middlewareHandlers, m)
 	}
 
-	go func(handler []Handler, handlerQueue chan http.Handler) {
-		var weightsLCM uint = 0
+	go func(handler []Handler, middlewareHandlers []middleware.Middleware, handlerQueue chan http.Handler) {
+		middlewareCount := len(middlewareHandlers)
 		handlerCount := len(handler)
-		weights := make([]uint, 0, handlerCount)
-		strideHandlers := make([]StrideHandler, 0, handlerCount)
+		strideHandlers := make([]*StrideHandler, 0, handlerCount)
 
+		weights := make([]uint, 0, handlerCount)
 		for _, v := range handler {
 			weights = append(weights, v.Weight)
 		}
 
-		if handlerCount == 1 {
-			weightsLCM = weights[0]
-		} else if handlerCount > 1 {
-			a := weights[0]
-			b := weights[1]
-			rem := weights[2:]
-
-			weightsLCM = lcm(a, b, rem...)
-		}
+		weightsLCM := lcmFromSlice(weights)
 
 		for _, h := range handler {
 			stride := weightsLCM / h.Weight
@@ -92,7 +79,7 @@ func (route *Route) Init() error {
 				handler: h,
 			}
 
-			strideHandlers = append(strideHandlers, sH)
+			strideHandlers = append(strideHandlers, &sH)
 		}
 
 		for {
@@ -113,10 +100,19 @@ func (route *Route) Init() error {
 				append(strideHandlers[:lowestPassIdx], strideHandlers[lowestPassIdx+1:]...),
 				sH)
 
+			// incrememt pass by stride
+			sH.pass += sH.stride
+
+			var middlewareHandler http.Handler
 			// Generate handler chain with middlewares
-			handlerQueue <- &sH
+			for i := middlewareCount - 1; i >= 0; i-- {
+				middlewareHandler = middlewareHandlers[i].Middleware(sH)
+			}
+
+			// Generate handler chain with middlewares
+			handlerQueue <- middlewareHandler
 		}
-	}(route.Handlers, route.handlerChan)
+	}(route.Handlers, route.middlewareHandlers, route.handlerChan)
 
 	return nil
 }
@@ -125,11 +121,6 @@ func (route *Route) Init() error {
 // further into a handler.
 func (route *Route) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	handler := <-route.handlerChan
-
-	// Generate handler chain with middlewares
-	for i := len(route.middlewareHandlers) - 1; i >= 0; i-- {
-		handler = route.middlewareHandlers[i].Middleware(handler)
-	}
 
 	handler.ServeHTTP(w, r)
 }
@@ -151,4 +142,19 @@ func lcm(a, b uint, integers ...uint) uint {
 	}
 
 	return result
+}
+
+func lcmFromSlice(weights []uint) uint {
+	weightsLen := len(weights)
+	if weightsLen == 0 {
+		return 0
+	} else if weightsLen == 1 {
+		return weights[0]
+	} else {
+		a := weights[0]
+		b := weights[1]
+		rem := weights[2:]
+
+		return lcm(a, b, rem...)
+	}
 }
