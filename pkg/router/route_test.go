@@ -27,32 +27,6 @@ func TestRouteUnmarshalingShould(t *testing.T) {
 	})
 }
 
-func TestRouteInitShould(t *testing.T) {
-	t.Run("generate the expected stride value for each route.", func(t *testing.T) {
-		tRoute := Route{
-			Handlers: []Handler{
-				{Weight: 1},
-				{Weight: 2},
-			},
-		}
-
-		tRoute.Init()
-
-		expected := []uint{2, 1}
-		got := make([]uint, 0, len(tRoute.strideHandlers))
-		for _, sH := range tRoute.strideHandlers {
-			got = append(got, sH.stride)
-		}
-
-		for i, expectedStride := range expected {
-			if expectedStride != got[i] {
-				t.Errorf(errFmt, expectedStride, got[i])
-			}
-		}
-
-	})
-}
-
 func TestHandlerSelectionShould(t *testing.T) {
 
 }

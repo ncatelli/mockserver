@@ -9,6 +9,10 @@ import (
 
 type ErrRouteMatchFailure struct{}
 
+var (
+	TestHandler Handler = Handler{Weight: 1, ResponseStatus: 200, StaticResponse: "Ok"}
+)
+
 func routerHelper(req *http.Request, route *Route) bool {
 	rm := &mux.RouteMatch{}
 	router, _ := New([]*Route{route})
@@ -24,8 +28,9 @@ func TestRouterShouldMatch(t *testing.T) {
 		}
 
 		route := &Route{
-			Path:   "/test",
-			Method: "GET",
+			Path:     "/test",
+			Method:   "GET",
+			Handlers: []Handler{TestHandler},
 		}
 
 		if !routerHelper(req, route) {
@@ -40,8 +45,9 @@ func TestRouterShouldMatch(t *testing.T) {
 		}
 
 		route := &Route{
-			Path:   "/test/{key}",
-			Method: "GET",
+			Path:     "/test/{key}",
+			Method:   "GET",
+			Handlers: []Handler{TestHandler},
 		}
 
 		if !routerHelper(req, route) {
@@ -63,6 +69,7 @@ func TestRouterShouldMatch(t *testing.T) {
 			RequestHeaders: map[string]string{
 				"TestHeader": "present",
 			},
+			Handlers: []Handler{TestHandler},
 		}
 
 		if !routerHelper(req, route) {
@@ -82,6 +89,7 @@ func TestRouterShouldMatch(t *testing.T) {
 			QueryParams: map[string]string{
 				"testparam": "present",
 			},
+			Handlers: []Handler{TestHandler},
 		}
 
 		if !routerHelper(req, route) {
@@ -98,8 +106,9 @@ func TestRouterShouldNotMatch(t *testing.T) {
 		}
 
 		route := &Route{
-			Path:   "/test",
-			Method: "POST",
+			Path:     "/test",
+			Method:   "POST",
+			Handlers: []Handler{TestHandler},
 		}
 
 		if routerHelper(req, route) {
@@ -119,6 +128,7 @@ func TestRouterShouldNotMatch(t *testing.T) {
 			RequestHeaders: map[string]string{
 				"TestHeader": "present",
 			},
+			Handlers: []Handler{TestHandler},
 		}
 
 		if routerHelper(req, route) {
@@ -138,6 +148,7 @@ func TestRouterShouldNotMatch(t *testing.T) {
 			QueryParams: map[string]string{
 				"testparam": "present",
 			},
+			Handlers: []Handler{TestHandler},
 		}
 
 		if routerHelper(req, route) {
