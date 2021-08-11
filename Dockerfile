@@ -1,5 +1,5 @@
-ARG BASEIMG="alpine:3.11"
-ARG BUILDIMG="golang:1.13.6-alpine3.11"
+ARG BASEIMG="alpine:3.14"
+ARG BUILDIMG="golang:1.16-alpine"
 FROM $BUILDIMG as builder
 
 ARG APP_NAME="mockserver"

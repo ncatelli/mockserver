@@ -2,15 +2,10 @@ package router
 
 import (
 	"fmt"
-	"math/rand"
+	"math"
 	"net/http"
-	"time"
 
 	"github.com/ncatelli/mockserver/pkg/router/middleware"
-)
-
-const (
-	maxInt64 = 1<<63 - 1
 )
 
 // ErrInvalidWeight is thrown when a handler has a weight outside the
@@ -20,11 +15,18 @@ type ErrInvalidWeight struct {
 }
 
 func (e ErrInvalidWeight) Error() string {
-	return fmt.Sprintf("handler %v exceeds maximum total weight of %d", *e.handler, maxInt64)
+	return fmt.Sprintf("handler %v exceeds maximum total weight of %v", *e.handler, math.MaxInt64)
 }
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
+// StrideHandlers wraps the Handler type with a precomputed stride and pass context.
+type StrideHandler struct {
+	pass    uint
+	stride  uint
+	handler Handler
+}
+
+func (sH *StrideHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	sH.handler.ServeHTTP(w, r)
 }
 
 // Route includes all routing data to build a route and forward to an
@@ -37,17 +39,12 @@ type Route struct {
 	Middleware         map[string]map[string]string `yaml:"middleware"`
 	Handlers           []Handler                    `yaml:"handlers"`
 	middlewareHandlers []middleware.Middleware
-	totalWeight        int
+	handlerChan        chan http.Handler
 }
 
 // Init performs any setup and initialization around the route.
 func (route *Route) Init() error {
-	tw, err := calculateTotalWeightofHandlers(route.Handlers)
-	if err != nil {
-		return err
-	}
-
-	route.totalWeight = tw
+	route.handlerChan = make(chan http.Handler, 1024)
 
 	for k, v := range route.Middleware {
 		m := middleware.Lookup(k)
@@ -62,55 +59,102 @@ func (route *Route) Init() error {
 		route.middlewareHandlers = append(route.middlewareHandlers, m)
 	}
 
+	go func(handler []Handler, middlewareHandlers []middleware.Middleware, handlerQueue chan http.Handler) {
+		middlewareCount := len(middlewareHandlers)
+		handlerCount := len(handler)
+		strideHandlers := make([]*StrideHandler, 0, handlerCount)
+
+		weights := make([]uint, 0, handlerCount)
+		for _, v := range handler {
+			weights = append(weights, v.Weight)
+		}
+
+		weightsLCM := lcmFromSlice(weights)
+
+		for _, h := range handler {
+			stride := weightsLCM / h.Weight
+			sH := StrideHandler{
+				stride:  stride,
+				pass:    0,
+				handler: h,
+			}
+
+			strideHandlers = append(strideHandlers, &sH)
+		}
+
+		for {
+			// set to max of uint so first value is guaranteed to be <= value.
+			var lowestPass uint = math.MaxUint32
+			lowestPassIdx := 0
+			for idx, h := range strideHandlers {
+				if h.pass < lowestPass {
+					lowestPass = h.pass
+					lowestPassIdx = idx
+				}
+			}
+
+			sH := strideHandlers[lowestPassIdx]
+
+			// append strideHandler to the end of the queue
+			strideHandlers = append(
+				append(strideHandlers[:lowestPassIdx], strideHandlers[lowestPassIdx+1:]...),
+				sH)
+
+			// incrememt pass by stride
+			sH.pass += sH.stride
+
+			var middlewareHandler http.Handler = sH
+			// Generate handler chain with middlewares
+			for i := middlewareCount; i > 0; i-- {
+				middlewareHandler = middlewareHandlers[i].Middleware(sH)
+			}
+
+			// Generate handler chain with middlewares
+			handlerQueue <- middlewareHandler
+		}
+	}(route.Handlers, route.middlewareHandlers, route.handlerChan)
+
 	return nil
 }
 
 // ServeHTTP implements the http.Handler interface for pipelining a request
 // further into a handler.
 func (route *Route) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	handler := route.selectHandler(rand.Intn(route.totalWeight + 1))
-
-	// Generate handler chain with middlewares
-	for i := len(route.middlewareHandlers) - 1; i >= 0; i-- {
-		handler = route.middlewareHandlers[i].Middleware(handler)
-	}
+	handler := <-route.handlerChan
 
 	handler.ServeHTTP(w, r)
 }
 
-// selectHandler randomly selects and returns a handler from the route
-// handlers pool.
-func (route *Route) selectHandler(hw int) http.Handler {
-	var handler http.Handler
-
-	// make handler selection based on weight.
-	for _, h := range route.Handlers {
-		hw -= h.Weight
-		if hw <= 0 {
-			handler = &h
-			break
-		}
+func gcd(a, b uint) uint {
+	for b != 0 {
+		t := b
+		b = a % b
+		a = t
 	}
-
-	return handler
+	return a
 }
 
-// calculateTotalWeightofHandlers iterates over all handlers assigned to the
-// route and sums their total weight.
-func calculateTotalWeightofHandlers(handlers []Handler) (int, error) {
-	var totalWeight int
+func lcm(a, b uint, integers ...uint) uint {
+	result := a * b / gcd(a, b)
 
-	for _, h := range handlers {
-		maxhandlerWeight := maxInt64 - totalWeight
-
-		if h.Weight > maxInt64 || h.Weight > maxhandlerWeight || h.Weight < 0 {
-			return -1, ErrInvalidWeight{
-				handler: &h,
-			}
-		}
-
-		totalWeight += h.Weight
+	for i := 0; i < len(integers); i++ {
+		result = lcm(result, integers[i])
 	}
 
-	return totalWeight, nil
+	return result
+}
+
+func lcmFromSlice(weights []uint) uint {
+	weightsLen := len(weights)
+	if weightsLen == 0 {
+		return 0
+	} else if weightsLen == 1 {
+		return weights[0]
+	} else {
+		a := weights[0]
+		b := weights[1]
+		rem := weights[2:]
+
+		return lcm(a, b, rem...)
+	}
 }
