@@ -2,8 +2,8 @@ package router
 
 import (
 	"html/template"
-	"io/ioutil"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 	"github.com/leekchan/gtf"
@@ -43,7 +43,7 @@ func (handler *Handler) getBodyTemplate() (*template.Template, error) {
 	if len(handler.StaticResponse) > 0 {
 		body = handler.StaticResponse
 	} else if len(handler.ResponsePath) > 0 {
-		bb, err := ioutil.ReadFile(handler.ResponsePath)
+		bb, err := os.ReadFile(handler.ResponsePath)
 		if err != nil {
 			return nil, err
 		}
