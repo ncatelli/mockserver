@@ -84,7 +84,7 @@ func (route *Route) Init() error {
 
 		for {
 			// set to max of uint so first value is guaranteed to be <= value.
-			var lowestPass uint = math.MaxUint32
+			var lowestPass uint = math.MaxUint
 			lowestPassIdx := 0
 			for idx, h := range strideHandlers {
 				if h.pass < lowestPass {
@@ -94,6 +94,13 @@ func (route *Route) Init() error {
 			}
 
 			sH := strideHandlers[lowestPassIdx]
+
+			// subtract lowest pass from all handlers on overflow
+			if (math.MaxUint - lowestPass) < sH.stride {
+				for _, handler := range strideHandlers {
+					handler.pass -= lowestPass
+				}
+			}
 
 			// append strideHandler to the end of the queue
 			strideHandlers = append(
